@@ -142,7 +142,7 @@ PCA_asymmetry_geometric<-gm.prcomp_asymmetry_geometric
 summary(PCA_asymmetry_geometric)
 
 PCA_scores<-PCA_asymmetry_geometric$x
-write.csv(PCA_scores,"PCA_scores.csv")
+#write.csv(PCA_scores,"PCA_scores.csv")
 PCA_scores<-data.frame(PCA_scores)
 PCA_scores<-PCA_scores %>% select(Comp1,Comp2,Comp3)
 
@@ -221,7 +221,7 @@ PCA_asymmetry_geometric<-gm.prcomp_asymmetry_geometric
 summary(PCA_asymmetry_geometric)
 
 PCA_scores<-PCA_asymmetry_geometric$x
-write.csv(PCA_scores,"PCA_scores_head.csv")
+#write.csv(PCA_scores,"PCA_scores_head.csv")
 PCA_scores<-data.frame(PCA_scores)
 PCA_scores<-PCA_scores %>% select(Comp1,Comp2,Comp3)
 
