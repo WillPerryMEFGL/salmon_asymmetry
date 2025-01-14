@@ -9,6 +9,7 @@ library(DescTools)
 library(geomorph)
 library(gridExtra)
 library(graphics)
+library(Morpho)
 
 symmetry_metadata <- read_csv("metadata.csv")
 linear_measure_average <- read_csv("linear_measure_average.csv")
@@ -55,6 +56,24 @@ pec_allometry$coefficients
 m.lst <- lstrends(pec_allometry, "rearing", var="length_cm")
 pairs(m.lst)
 
+pec_resid_model<-  lm(pec_mean ~length_cm, data=linear_measure_average)
+ggplot(linear_measure_average, aes(x=length_cm, y=pec_mean)) + 
+  geom_point(size=2)+ 
+  geom_smooth(method=lm)
+linear_measure_average$pec_resid  <- residuals(pec_resid_model)
+
+ggplot(linear_measure_average, aes(x = rearing, y = pec_resid,colour=rearing)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_colour_manual(values = c("#D55E00","#E69F00", "#56B4E9","#0072B2"))+
+  geom_jitter(size=2) +          
+  labs(x = "", y = "")  +theme_bw()+
+  theme(
+    axis.text.x = element_text(size = 16), 
+    axis.text.y = element_text(size = 16))
+pec_resid_anova<-  lm(pec_resid ~rearing, data=linear_measure_average)
+anova(pec_resid_anova)
+emmeans(pec_resid_anova, pairwise ~ rearing)
+
 #---- MOUTH LENGTH ----
 
 #DIFFERENCES IN MOUTH BETWEEN LEFT AND RIGHT SIDE
@@ -90,6 +109,24 @@ anova(mouth_allometry)
 mouth_allometry$coefficients
 m.lst <- lstrends(mouth_allometry, "rearing", var="length_cm")
 pairs(m.lst)
+
+mouth_resid_model<-  lm(mouth_mean ~length_cm, data=linear_measure_average)
+ggplot(linear_measure_average, aes(x=length_cm, y=mouth_mean)) + 
+  geom_point(size=2)+ 
+  geom_smooth(method=lm)
+linear_measure_average$mouth_resid  <- residuals(mouth_resid_model)
+
+ggplot(linear_measure_average, aes(x = rearing, y = mouth_resid,colour=rearing)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_colour_manual(values = c("#D55E00","#E69F00", "#56B4E9","#0072B2"))+
+  geom_jitter(size=2) +          
+  labs(x = "", y = "")  +theme_bw()+
+  theme(
+    axis.text.x = element_text(size = 16), 
+    axis.text.y = element_text(size = 16))
+mouth_resid_anova<-  lm(mouth_resid ~rearing, data=linear_measure_average)
+anova(mouth_resid_anova)
+emmeans(mouth_resid_anova, pairwise ~ rearing)
 
 #---- EYE LENGTH ----
 
@@ -127,6 +164,23 @@ eye_width_allometry$coefficients
 m.lst <- lstrends(eye_width_allometry, "rearing", var="length_cm")
 pairs(m.lst)
 
+eye_width_resid_model<-  lm(eye_width_mean ~length_cm, data=linear_measure_average)
+ggplot(linear_measure_average, aes(x=length_cm, y=eye_width_mean)) + 
+  geom_point(size=2)+ 
+  geom_smooth(method=lm)
+linear_measure_average$eye_width_resid  <- residuals(eye_width_resid_model)
+
+ggplot(linear_measure_average, aes(x = rearing, y = eye_width_resid,colour=rearing)) +
+  geom_boxplot(outlier.shape = NA) + 
+  scale_colour_manual(values = c("#D55E00","#E69F00", "#56B4E9","#0072B2"))+
+  geom_jitter(size=2) +          
+  labs(x = "", y = "")  +theme_bw()+
+  theme(
+    axis.text.x = element_text(size = 16), 
+    axis.text.y = element_text(size = 16))
+eye_width_resid_anova<-  lm(eye_width_resid ~rearing, data=linear_measure_average)
+anova(eye_width_resid_anova)
+emmeans(eye_width_resid_anova, pairwise ~ rearing)
 
 #---- GEOMETRIC MORPHOMETRICS - BODY ----
 asymmetry_geometric <- readland.tps("tpsleft_right_lm_unbent_19.TPS",specID=c("ID"))
@@ -205,6 +259,24 @@ ggplot(assymetry_pairwise_comparisons_body ,aes(contrast,Z,fill=significance))+
     legend.text = element_text(size = 20),
     legend.title = element_text(size = 20))
 
+#BETWEEN GROUP PCA
+side<- gdf$side
+rearing<- gdf$rearing
+group <- paste(side, rearing, sep = "_")
+
+bwgPCA_side<-groupPCA(corrected_asymmetry_geometric$coords, group, rounds = 10000, cv = TRUE, weighting = FALSE)
+scores<-bwgPCA_side$CV
+scores<-data.frame(scores)
+
+scores<-cbind(scores,group)
+scores<-cbind(scores,side)
+scores<-cbind(scores,rearing)
+
+ggplot(scores, aes(X1 ,X2, color=side))+
+  geom_point()+
+  stat_ellipse()+
+  facet_grid(rows = vars(rearing))+theme_bw()+
+  theme(text = element_text(size=25))
 
 # ---- GEOMETRIC MORPHOMETRICS - HEAD ----
 
@@ -279,3 +351,22 @@ ggplot(assymetry_pairwise_comparisons_head ,aes(contrast,Z,fill=significance))+
     axis.title = element_text(size = 20), 
     legend.text = element_text(size = 20),
     legend.title = element_text(size = 20))
+
+#BETWEEN GROUP PCA
+side<- gdf$side
+rearing<- gdf$rearing
+group <- paste(side, rearing, sep = "_")
+
+bwgPCA_side<-groupPCA(corrected_asymmetry_geometric$coords, group, rounds = 10000, cv = TRUE, weighting = FALSE)
+scores<-bwgPCA_side$CV
+scores<-data.frame(scores)
+
+scores<-cbind(scores,group)
+scores<-cbind(scores,side)
+scores<-cbind(scores,rearing)
+
+ggplot(scores, aes(X1 ,X2, color=side))+
+  geom_point()+
+  stat_ellipse()+
+  facet_grid(rows = vars(rearing))+theme_bw()+
+  theme(text = element_text(size=25))
